@@ -33,12 +33,14 @@ namespace DevFreela.Application.Services.Implementations
             return new UserViewModel(user.Id, user.FullName, user.Email, user.BirthDate);
         }
 
-        public void Login(LoginInputModel inputModel)
+        public bool Login(LoginInputModel inputModel)
         {
             var user = _dbContext.Users.FirstOrDefault(u => u.Email == inputModel.Email && u.Password == inputModel.Password);
             
             if(user == null)
-                throw new NullReferenceException();
+                return false;
+
+            return true;
         }
     }
 }

@@ -1,4 +1,4 @@
-namespace DevFreela.API.Example
+namespace DevFreela.API.Models
 {
     public class ExampleClass
     {

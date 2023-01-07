@@ -1,4 +1,3 @@
-using DevFreela.API.Example;
 using DevFreela.API.Models;
 using DevFreela.Application.Services.Implementations;
 using DevFreela.Application.Services.Interfaces;
@@ -10,6 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Pegando uma cessão do arquivo de configuração, criando uma instancia e disponibilizando no projeto
 builder.Services.Configure<OpeningTimeOption>(builder.Configuration.GetSection("OpeningTime"));
 
+// Exemplo Injeção de Dependencia
 //services.AddSingleton<ExampleClass>(e => new ExampleClass { Name = "Initial Stage" });
 builder.Services.AddScoped<ExampleClass>(e => new ExampleClass { Name = "Initial Stage" });
 
