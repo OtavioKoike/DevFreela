@@ -1,64 +1,64 @@
-using DevFreela.API.Example;
-using DevFreela.API.Models;
+using DevFreela.Application.InputModels;
+using DevFreela.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
 
 namespace DevFreela.API.Controllers
 {
     [Route("api/projects")]
     public class ProjectsController : ControllerBase
     {
-        private readonly OpeningTimeOption _option;
-        public ProjectsController(IOptions<OpeningTimeOption> option, ExampleClass example)
+        private readonly IProjectService _projectService;
+        public ProjectsController(IProjectService projectService)
         {
-            example.Name = "Atualizado no Projects Controller";
-            _option = option.Value;
+            _projectService = projectService;
         }
 
         //api/projects?query=netcore
         [HttpGet] //return Ok sempre
         public IActionResult Get(string query)
         {
-            //Buscar todos ou filtrar
+            var projects = _projectService.GetAll(query);
 
             //Quando se busca todos, mesmo que não encontre nenhum o padrão é retornar OK
-            return Ok();
+            return Ok(projects);
         }
 
         //api/projects/{id}
         [HttpGet("{id}")] //return Ok ou NotFound
         public IActionResult GetById(int id)
         {
-            //Buscar o projeto
+            var project = _projectService.GetById(id);
 
-            return Ok();
-            //return NotFound();
+            if(project == null)
+                return NotFound();
+
+            return Ok(project);
         }
 
         //api/projects
         [HttpPost] //return Created ou BadRequest
-        public IActionResult Post([FromBody] CreateProjectModel createProject)
+        public IActionResult Post([FromBody] NewProjectInputModel inputModel)
         {
-            if(createProject.Title.Length > 50)
+            if(inputModel.Title.Length > 50)
             {
                 return BadRequest();
             }
 
-            //Cadastrar o projeto
+            var id = _projectService.Create(inputModel);
 
-            return CreatedAtAction(nameof(GetById), new { id = createProject.Id }, createProject);
+            return CreatedAtAction(nameof(GetById), new { id = id }, inputModel);
         }
 
         //api/projects/{id}
         [HttpPut("{id}")] //return NoContent, NotFound ou BadRequest
-        public IActionResult Put(int id, [FromBody] UpdateProjectModel updateProject)
+        public IActionResult Put(int id, [FromBody] UpdateProjectInputModel inputModel)
         {
-            if (updateProject.Description.Length > 200)
+            if (inputModel.Description.Length > 200)
             {
                 return BadRequest();
             }
 
-            //Atualizo o projeto
+            _projectService.Update(inputModel);
 
             return NoContent();
         }
@@ -70,7 +70,7 @@ namespace DevFreela.API.Controllers
             //Busca, se nao existir retorna Not Found
             //return NotFound();
 
-            //Remover
+            _projectService.Delete(id);
 
             return NoContent();
         }
@@ -78,8 +78,10 @@ namespace DevFreela.API.Controllers
         //---------- Comentarios ----------
         //api/projects/{id}/comments
         [HttpPost("{id}")]
-        public IActionResult PostComment([FromBody] CreateCommentModel createComment)
+        public IActionResult PostComment([FromBody] CreateCommentInputModel inputModel)
         {
+            _projectService.CreateComment(inputModel);
+
             return NoContent();
         }
         
@@ -88,6 +90,8 @@ namespace DevFreela.API.Controllers
         [HttpPut("{id}/start")]
         public IActionResult PutStart(int id)
         {
+            _projectService.Start(id);
+
             return NoContent();
         }
 
@@ -95,6 +99,8 @@ namespace DevFreela.API.Controllers
         [HttpPut("{id}/finish")]
         public IActionResult PutFinish(int id)
         {
+            _projectService.Finish(id);
+
             return NoContent();
         }
     }
