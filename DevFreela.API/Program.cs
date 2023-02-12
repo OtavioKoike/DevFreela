@@ -2,6 +2,7 @@ using DevFreela.API.Models;
 using DevFreela.Application.Services.Implementations;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -13,7 +14,12 @@ builder.Services.Configure<OpeningTimeOption>(builder.Configuration.GetSection("
 //services.AddSingleton<ExampleClass>(e => new ExampleClass { Name = "Initial Stage" });
 builder.Services.AddScoped<ExampleClass>(e => new ExampleClass { Name = "Initial Stage" });
 
-builder.Services.AddSingleton<DevFreelaDbContext>();
+// Utilizando um banco local
+// builder.Services.AddSingleton<DevFreelaDbContext>();
+
+var connectionString = builder.Configuration.GetConnectionString("DevFreelaCs");
+builder.Services.AddDbContext<DevFreelaDbContext>(options => options.UseSqlServer(connectionString));
+
 
 // É possivel criar as injeções de Dependencias em uma classe especifica de extensions
 builder.Services.AddScoped<IProjectService, ProjectService>();

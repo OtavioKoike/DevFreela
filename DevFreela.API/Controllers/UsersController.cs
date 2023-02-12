@@ -25,7 +25,7 @@ namespace DevFreela.API.Controllers
                 return NotFound();
             }
 
-            return Ok();
+            return Ok(user);
         }
 
         //api/users

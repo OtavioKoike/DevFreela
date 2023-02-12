@@ -15,9 +15,9 @@ namespace DevFreela.API.Controllers
 
         //api/projects?query=netcore
         [HttpGet] //return Ok sempre
-        public IActionResult Get(string query)
+        public IActionResult Get()
         {
-            var projects = _projectService.GetAll(query);
+            var projects = _projectService.GetAll();
 
             //Quando se busca todos, mesmo que não encontre nenhum o padrão é retornar OK
             return Ok(projects);
@@ -77,7 +77,7 @@ namespace DevFreela.API.Controllers
 
         //---------- Comentarios ----------
         //api/projects/{id}/comments
-        [HttpPost("{id}")]
+        [HttpPost("{id}/comment")]
         public IActionResult PostComment([FromBody] CreateCommentInputModel inputModel)
         {
             _projectService.CreateComment(inputModel);
