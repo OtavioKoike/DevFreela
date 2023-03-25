@@ -2,7 +2,6 @@ using DevFreela.Application.Commands.CreateComment;
 using DevFreela.Application.Commands.CreateProject;
 using DevFreela.Application.Commands.DeleteProject;
 using DevFreela.Application.Commands.UpdateProject;
-using DevFreela.Application.InputModels;
 using DevFreela.Application.Queries.GetAllProjects;
 using DevFreela.Application.Services.Interfaces;
 using MediatR;
@@ -27,7 +26,7 @@ namespace DevFreela.API.Controllers
         public async Task<IActionResult> Get(string query)
         {
             // Usando Services
-            //var projects = _projectService.GetAll();
+            //var projects = await _projectService.GetAll();
 
             var getAllProjectsQuery = new GetAllPojectsQuery(query);
             var projects = await _mediator.Send(getAllProjectsQuery);
@@ -38,9 +37,9 @@ namespace DevFreela.API.Controllers
 
         //api/projects/{id}
         [HttpGet("{id}")] //return Ok ou NotFound
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var project = _projectService.GetById(id);
+            var project = await _projectService.GetById(id);
 
             if(project == null)
                 return NotFound();
@@ -53,12 +52,10 @@ namespace DevFreela.API.Controllers
         public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
             if(command.Title.Length > 50)
-            {
                 return BadRequest();
-            }
 
             // Usando Services
-            //var id = _projectService.Create(inputModel);
+            //var id = await _projectService.Create(inputModel);
 
             // Usando CQRS
             // O mediatR controla o acesso a outras dependencias / Ele acha para onde ele deve delegar
@@ -72,12 +69,10 @@ namespace DevFreela.API.Controllers
         public async Task<IActionResult> Put(int id, [FromBody] UpdateProjectCommand command)
         {
             if (command.Description.Length > 200)
-            {
                 return BadRequest();
-            }
 
             // Usando Services
-            //_projectService.Update(inputModel);
+            //await _projectService.Update(inputModel);
 
             // Usando CQRS
             await _mediator.Send(command);
@@ -93,7 +88,7 @@ namespace DevFreela.API.Controllers
             //return NotFound();
 
             // Usando Services
-            //_projectService.Delete(id);
+            //await _projectService.Delete(id);
 
             // Usando CQRS
             var command = new DeleteProjectCommand(id);
@@ -108,7 +103,7 @@ namespace DevFreela.API.Controllers
         public async Task<IActionResult> PostComment([FromBody] CreateCommentCommand command)
         {
             // Usando services
-            //_projectService.CreateComment(inputModel);
+            //await _projectService.CreateComment(inputModel);
 
             // Usando CQRS
             await _mediator.Send(command);
@@ -119,18 +114,18 @@ namespace DevFreela.API.Controllers
         //---------- Inicialização/Finalização ----------
         //api/projects/{id}/start
         [HttpPut("{id}/start")]
-        public IActionResult PutStart(int id)
+        public async Task<IActionResult> PutStart(int id)
         {
-            _projectService.Start(id);
+            await _projectService.Start(id);
 
             return NoContent();
         }
 
         //api/projects/{id}/start
         [HttpPut("{id}/finish")]
-        public IActionResult PutFinish(int id)
+        public async Task<IActionResult> PutFinish(int id)
         {
-            _projectService.Finish(id);
+            await _projectService.Finish(id);
 
             return NoContent();
         }

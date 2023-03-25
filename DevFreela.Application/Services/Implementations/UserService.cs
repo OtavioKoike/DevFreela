@@ -2,31 +2,30 @@ using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Application.ViewModels;
 using DevFreela.Core.Entities;
-using DevFreela.Infrastructure.Persistence;
+using DevFreela.Core.Repositories;
 
 namespace DevFreela.Application.Services.Implementations
 {
     public class UserService : IUserService
     {
-        private readonly DevFreelaDbContext _dbContext;
+        private readonly IUserRepository _userRepository;
 
-        public UserService(DevFreelaDbContext dbContext)
+        public UserService(IUserRepository userRepository)
         {
-            _dbContext = dbContext;
+            _userRepository = userRepository;
         }
 
-        public int Create(CreateUserInputModel inputModel)
+        public async Task<int> Create(CreateUserInputModel inputModel)
         {
             var user = new User(inputModel.FullName, inputModel.Email, inputModel.birthDate, inputModel.Password);
-            _dbContext.Users.Add(user);
-            _dbContext.SaveChanges();
+            await _userRepository.AddAsync(user);
 
             return user.Id;
         }
 
-        public UserViewModel GetById(int id)
+        public async Task<UserViewModel> GetById(int id)
         {
-            var user = _dbContext.Users.SingleOrDefault(u => u.Id == id);
+            var user = await _userRepository.GetByIdAsync(id);
 
             if(user == null)
                 return null;
@@ -34,9 +33,9 @@ namespace DevFreela.Application.Services.Implementations
             return new UserViewModel(user.Id, user.FullName, user.Email, user.BirthDate);
         }
 
-        public bool Login(LoginInputModel inputModel)
+        public async Task<bool> Login(LoginInputModel inputModel)
         {
-            var user = _dbContext.Users.FirstOrDefault(u => u.Email == inputModel.Email && u.Password == inputModel.Password);
+            var user = await _userRepository.GetByLoginAsync(inputModel.Email, inputModel.Password);
             
             if(user == null)
                 return false;

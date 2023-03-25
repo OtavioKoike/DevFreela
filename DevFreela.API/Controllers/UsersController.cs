@@ -1,4 +1,3 @@
-using DevFreela.API.Models;
 using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
@@ -16,23 +15,21 @@ namespace DevFreela.API.Controllers
 
         //api/users/{id}
         [HttpGet("{id}")]
-        public IActionResult GetById(int id)
+        public async Task<IActionResult> GetById(int id)
         {
-            var user = _userService.GetById(id);
+            var user = await _userService.GetById(id);
 
             if (user == null)
-            {
                 return NotFound();
-            }
 
             return Ok(user);
         }
 
         //api/users
         [HttpPost]
-        public IActionResult Post([FromBody] CreateUserInputModel inputModel)
+        public async Task<IActionResult> Post([FromBody] CreateUserInputModel inputModel)
         {
-            var id = _userService.Create(inputModel);
+            var id = await _userService.Create(inputModel);
 
             return CreatedAtAction(nameof(GetById), new { id = id }, inputModel);
         }
@@ -40,9 +37,9 @@ namespace DevFreela.API.Controllers
         //---------- Login ----------
         //api/users/{id}/login
         [HttpPut("{id}/login")]
-        public IActionResult Login(int id, [FromBody] LoginInputModel inputModel)
+        public async Task<IActionResult> Login(int id, [FromBody] LoginInputModel inputModel)
         {
-            var access = _userService.Login(inputModel);
+            var access = await _userService.Login(inputModel);
 
             if(!access)
                 return BadRequest();

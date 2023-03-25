@@ -1,60 +1,53 @@
-using Dapper;
 using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Application.ViewModels;
 using DevFreela.Core.Entities;
-using DevFreela.Infrastructure.Persistence;
-using Microsoft.Data.SqlClient;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
+using DevFreela.Core.Repositories;
 
 namespace DevFreela.Application.Services.Implementations
 {
     public class ProjectService : IProjectService
     {
+        private readonly IProjectRepository _projectRepository;
 
-        private readonly DevFreelaDbContext _dbContext; 
-        private readonly string _connectionString;
-        public ProjectService(DevFreelaDbContext dbContext, IConfiguration configuration)
+        public ProjectService(IProjectRepository projectRepository)
         {
-            _dbContext = dbContext;
-            _connectionString = configuration.GetConnectionString("DevFreelaCs");
+            _projectRepository = projectRepository;
         }
-        public int Create(NewProjectInputModel inputModel)
+
+        public async Task<int> Create(NewProjectInputModel inputModel)
         {
             var project = new Project(inputModel.Title, inputModel.Description, inputModel.IdClient, inputModel.IdFreelancer, inputModel.TotalCost);
-            _dbContext.Projects.Add(project);
-            _dbContext.SaveChanges();
+            await _projectRepository.AddAsync(project);
             
             return project.Id;
         }
 
-        public void CreateComment(CreateCommentInputModel inputModel)
+        public async Task CreateComment(CreateCommentInputModel inputModel)
         {
             var comment = new ProjectComment(inputModel.Content, inputModel.IdProject, inputModel.IdUser);
-            _dbContext.ProjectComments.Add(comment);
-            _dbContext.SaveChanges();
+            await _projectRepository.AddCommentAsync(comment);
         }
 
-        public void Delete(int id)
+        public async Task Delete(int id)
         {
-            var project = _dbContext.Projects.SingleOrDefault(p => p.Id == id);
-
+            var project = await _projectRepository.GetByIdAsync(id);
             project?.Cancel();
-            _dbContext.SaveChanges();
+
+            await _projectRepository.SaveChangesAsync();
         }
 
-        public void Finish(int id)
+        public async Task Finish(int id)
         {
-            var project = _dbContext.Projects.SingleOrDefault(p => p.Id == id);
-
+            var project = await _projectRepository.GetByIdAsync(id);
             project?.Finish();
-            _dbContext.SaveChanges();
+
+            await _projectRepository.SaveChangesAsync();
         }
 
-        public List<ProjectViewModel> GetAll()
+        public async Task<List<ProjectViewModel>> GetAll()
         {
-            var projects = _dbContext.Projects;
+            var projects =  await _projectRepository.GetAllAsync();
 
             return projects
                 .Select(p => new ProjectViewModel(p.Id, p.Title, p.CreateAt))
@@ -62,15 +55,11 @@ namespace DevFreela.Application.Services.Implementations
             
         }
 
-        public ProjectDetailsViewModel GetById(int id)
+        public async Task<ProjectDetailsViewModel> GetById(int id)
         {
-            var project = _dbContext.Projects
-                .Include(p => p.Client) //Incluir/Mapear o objeto do cliente
-                .Include(p => p.Freelancer) //Incluir/Mapear o objeto do freelancer
-                .Include(p => p.Comments) //Incluir/Mapear o objeto dos comentarios
-                .SingleOrDefault(p => p.Id == id);
+            var project = await _projectRepository.GetByIdAsync(id);
 
-            if(project == null)
+            if (project == null)
                 return null;
 
             return new ProjectDetailsViewModel(
@@ -80,29 +69,20 @@ namespace DevFreela.Application.Services.Implementations
             );
         }
 
-        public void Start(int id)
+        public async Task Start(int id)
         {
-            var project = _dbContext.Projects.SingleOrDefault(p => p.Id == id);
+            var project = await _projectRepository.GetByIdAsync(id);
             project?.Start();
 
-            // Dapper
-            using(var sqlConnection = new SqlConnection(_connectionString)){
-                sqlConnection.Open();
-
-                var script = "UPDATE Projects SET Status = @status, StartedAt = @startedAt WHERE Id = @id";
-                sqlConnection.Execute(script, new { status = project.Status, startedAt = project.StartedAt, id });
-            }
-            
-            // Entity Framework Core
-            // _dbContext.SaveChanges();
+            await _projectRepository.StartAsync(project);
         }
 
-        public void Update(UpdateProjectInputModel inputModel)
+        public async Task Update(UpdateProjectInputModel inputModel)
         {
-            var project = _dbContext.Projects.SingleOrDefault(p => p.Id == inputModel.Id);
+            var project = await _projectRepository.GetByIdAsync(inputModel.Id);
 
             project.Update(inputModel.Title, inputModel.Description, inputModel.TotalCost);
-            _dbContext.SaveChanges();
+            await _projectRepository.SaveChangesAsync();
         }
     }
 }

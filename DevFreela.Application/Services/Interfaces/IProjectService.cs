@@ -5,13 +5,13 @@ namespace DevFreela.Application.Services.Interfaces
 {
     public interface IProjectService
     {
-        List<ProjectViewModel> GetAll();
-        ProjectDetailsViewModel GetById(int id);
-        int Create(NewProjectInputModel inputModel);
-        void Update(UpdateProjectInputModel inputModel);
-        void Delete(int id);
-        void CreateComment(CreateCommentInputModel inputModel);
-        void Start(int id);
-        void Finish(int id); 
+        Task<List<ProjectViewModel>> GetAll();
+        Task<ProjectDetailsViewModel> GetById(int id);
+        Task<int> Create(NewProjectInputModel inputModel);
+        Task Update(UpdateProjectInputModel inputModel);
+        Task Delete(int id);
+        Task CreateComment(CreateCommentInputModel inputModel);
+        Task Start(int id);
+        Task Finish(int id); 
     }
 }
