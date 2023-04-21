@@ -29,6 +29,17 @@ namespace DevFreela.API.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] CreateUserInputModel inputModel)
         {
+            // Movido para ValidatorFilters para não precisar repetir código
+            //if (!ModelState.IsValid)
+            //{
+            //    var messages = ModelState
+            //        .SelectMany(ms => ms.Value.Errors)
+            //        .Select(e => e.ErrorMessage)
+            //        .ToList();
+
+            //    return BadRequest(messages);
+            //}
+
             var id = await _userService.Create(inputModel);
 
             return CreatedAtAction(nameof(GetById), new { id = id }, inputModel);

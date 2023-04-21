@@ -1,10 +1,13 @@
+using DevFreela.API.Filters;
 using DevFreela.API.Models;
 using DevFreela.Application.Commands.CreateProject;
 using DevFreela.Application.Services.Implementations;
 using DevFreela.Application.Services.Interfaces;
+using DevFreela.Application.Validators;
 using DevFreela.Core.Repositories;
 using DevFreela.Infrastructure.Persistence;
 using DevFreela.Infrastructure.Persistence.Repositories;
+using FluentValidation.AspNetCore;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -34,7 +37,10 @@ builder.Services.AddScoped<IProjectRepository, ProjectRepositoy>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 
-builder.Services.AddControllers();
+// Para configurar o Filter passamos o tipo dele na listagem de filters das controllers
+builder.Services.AddControllers(options => options.Filters.Add(typeof(ValidatorFilter)))
+    //Configurando todas classes de Validators que estão no mesmo Assembly/Projeto que o Validator passado como parametro
+    .AddFluentValidation(fv => fv.RegisterValidatorsFromAssemblyContaining<CreateProjectCommandValidator>());
 
 // Busca por todas classes/commands que implementem IRequest e associalos a todos commandsHandlers que implementem IRequestHandler
 // Obs.: Ele ja registra TODOS Commands/Queries e seus Handlers

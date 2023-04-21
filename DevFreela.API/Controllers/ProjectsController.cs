@@ -51,8 +51,24 @@ namespace DevFreela.API.Controllers
         [HttpPost] //return Created ou BadRequest
         public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
-            if(command.Title.Length > 50)
-                return BadRequest();
+            //-------------------------------------------------------------------
+            // Validações
+
+            //Criado dentro dos filters
+            //if(command.Title.Length > 50)
+            //    return BadRequest();
+
+            // Movido para ValidatorFilters para não precisar repetir código
+            //if (!ModelState.IsValid)
+            //{
+            //    var messages = ModelState
+            //        .SelectMany(ms => ms.Value.Errors)
+            //        .Select(e => e.ErrorMessage)
+            //        .ToList();
+
+            //    return BadRequest(messages);
+            //}
+            //-------------------------------------------------------------------
 
             // Usando Services
             //var id = await _projectService.Create(inputModel);
@@ -68,8 +84,9 @@ namespace DevFreela.API.Controllers
         [HttpPut("{id}")] //return NoContent, NotFound ou BadRequest
         public async Task<IActionResult> Put(int id, [FromBody] UpdateProjectCommand command)
         {
-            if (command.Description.Length > 200)
-                return BadRequest();
+            //Criado dentro dos filters
+            //if (command.Description.Length > 200)
+            //    return BadRequest();
 
             // Usando Services
             //await _projectService.Update(inputModel);
