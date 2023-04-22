@@ -6,5 +6,6 @@ namespace DevFreela.Application.InputModels
         public string Email { get; set; }
         public DateTime birthDate { get; set; }
         public string Password { get; set; }
+        public string Role { get; set; }
     }
 }

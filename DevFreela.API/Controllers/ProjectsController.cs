@@ -5,11 +5,15 @@ using DevFreela.Application.Commands.UpdateProject;
 using DevFreela.Application.Queries.GetAllProjects;
 using DevFreela.Application.Services.Interfaces;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DevFreela.API.Controllers
 {
     [Route("api/projects")]
+    // Todos metodos precisam de uma autenticacao (Definida na program)
+    // Porém é utilizado nesse ponto quando não está usando perfis (roles)
+    //[Authorize]
     public class ProjectsController : ControllerBase
     {
         private readonly IProjectService _projectService;
@@ -23,6 +27,7 @@ namespace DevFreela.API.Controllers
 
         //api/projects?query=netcore
         [HttpGet] //return Ok sempre
+        [Authorize(Roles = "client, freelancer" )] // Quando é utilizado roles, o Authorize fica no metodo especificando as roles que tem acesso
         public async Task<IActionResult> Get(string query)
         {
             // Usando Services
@@ -37,6 +42,7 @@ namespace DevFreela.API.Controllers
 
         //api/projects/{id}
         [HttpGet("{id}")] //return Ok ou NotFound
+        [Authorize(Roles = "client, freelancer")]
         public async Task<IActionResult> GetById(int id)
         {
             var project = await _projectService.GetById(id);
@@ -49,6 +55,7 @@ namespace DevFreela.API.Controllers
 
         //api/projects
         [HttpPost] //return Created ou BadRequest
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> Post([FromBody] CreateProjectCommand command)
         {
             //-------------------------------------------------------------------
@@ -82,6 +89,7 @@ namespace DevFreela.API.Controllers
 
         //api/projects/{id}
         [HttpPut("{id}")] //return NoContent, NotFound ou BadRequest
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> Put(int id, [FromBody] UpdateProjectCommand command)
         {
             //Criado dentro dos filters
@@ -99,6 +107,7 @@ namespace DevFreela.API.Controllers
 
         //api/projetcs/{id}
         [HttpDelete("{id}")] //return NoContent ou NotFound
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> Delete(int id)
         {
             //Busca, se nao existir retorna Not Found
@@ -117,6 +126,7 @@ namespace DevFreela.API.Controllers
         //---------- Comentarios ----------
         //api/projects/{id}/comments
         [HttpPost("{id}/comment")]
+        [Authorize(Roles = "client, freelancer")]
         public async Task<IActionResult> PostComment([FromBody] CreateCommentCommand command)
         {
             // Usando services
@@ -131,6 +141,7 @@ namespace DevFreela.API.Controllers
         //---------- Inicialização/Finalização ----------
         //api/projects/{id}/start
         [HttpPut("{id}/start")]
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> PutStart(int id)
         {
             await _projectService.Start(id);
@@ -140,6 +151,7 @@ namespace DevFreela.API.Controllers
 
         //api/projects/{id}/start
         [HttpPut("{id}/finish")]
+        [Authorize(Roles = "client")]
         public async Task<IActionResult> PutFinish(int id)
         {
             await _projectService.Finish(id);

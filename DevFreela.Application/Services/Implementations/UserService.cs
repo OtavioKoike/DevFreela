@@ -3,21 +3,27 @@ using DevFreela.Application.Services.Interfaces;
 using DevFreela.Application.ViewModels;
 using DevFreela.Core.Entities;
 using DevFreela.Core.Repositories;
+using DevFreela.Core.Services.Interfaces;
 
 namespace DevFreela.Application.Services.Implementations
 {
     public class UserService : IUserService
     {
         private readonly IUserRepository _userRepository;
+        private readonly IAuthService _authService;
 
-        public UserService(IUserRepository userRepository)
+        public UserService(IUserRepository userRepository, IAuthService authService)
         {
             _userRepository = userRepository;
+            _authService = authService;
         }
 
         public async Task<int> Create(CreateUserInputModel inputModel)
         {
-            var user = new User(inputModel.FullName, inputModel.Email, inputModel.birthDate, inputModel.Password);
+            // Criptografando o password
+            var passwordHash = _authService.ComputeSha256Hash(inputModel.Password);
+            var user = new User(inputModel.FullName, inputModel.Email, inputModel.birthDate, passwordHash, inputModel.Role);
+
             await _userRepository.AddAsync(user);
 
             return user.Id;
@@ -35,7 +41,7 @@ namespace DevFreela.Application.Services.Implementations
 
         public async Task<bool> Login(LoginInputModel inputModel)
         {
-            var user = await _userRepository.GetByLoginAsync(inputModel.Email, inputModel.Password);
+            var user = await _userRepository.GetUserByEmailAndPasswordAsync(inputModel.Email, inputModel.Password);
             
             if(user == null)
                 return false;
