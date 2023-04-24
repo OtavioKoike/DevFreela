@@ -1,18 +1,22 @@
 using DevFreela.Application.InputModels;
 using DevFreela.Application.Services.Interfaces;
 using DevFreela.Application.ViewModels;
+using DevFreela.Core.DTOs;
 using DevFreela.Core.Entities;
 using DevFreela.Core.Repositories;
+using DevFreela.Core.Services.Interfaces;
 
 namespace DevFreela.Application.Services.Implementations
 {
     public class ProjectService : IProjectService
     {
         private readonly IProjectRepository _projectRepository;
+        private readonly IPaymentService _paymentService;
 
-        public ProjectService(IProjectRepository projectRepository)
+        public ProjectService(IProjectRepository projectRepository, IPaymentService paymentService)
         {
             _projectRepository = projectRepository;
+            _paymentService = paymentService;
         }
 
         public async Task<int> Create(NewProjectInputModel inputModel)
@@ -37,12 +41,20 @@ namespace DevFreela.Application.Services.Implementations
             await _projectRepository.SaveChangesAsync();
         }
 
-        public async Task Finish(int id)
+        public async Task<bool> Finish(FinishProjectInputModel inputModel)
         {
-            var project = await _projectRepository.GetByIdAsync(id);
+            var project = await _projectRepository.GetByIdAsync(inputModel.Id);
             project?.Finish();
 
+            var paymentInfoDto = new PaymentInfoDTO(inputModel.Id, inputModel.CreditCardNumber, inputModel.Cvv, inputModel.ExpiresAt, inputModel.FullName, project.TotalCost);
+            var result = await _paymentService.ProcessPayment(paymentInfoDto);
+
+            if (!result)
+                project.SetPaymentPending();
+
             await _projectRepository.SaveChangesAsync();
+
+            return result;
         }
 
         public async Task<List<ProjectViewModel>> GetAll()

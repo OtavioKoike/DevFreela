@@ -7,6 +7,7 @@ using DevFreela.Application.Validators;
 using DevFreela.Core.Repositories;
 using DevFreela.Core.Services.Interfaces;
 using DevFreela.Infrastructure.Auth;
+using DevFreela.Infrastructure.Payments;
 using DevFreela.Infrastructure.Persistence;
 using DevFreela.Infrastructure.Persistence.Repositories;
 using FluentValidation.AspNetCore;
@@ -33,6 +34,8 @@ builder.Services.AddScoped<ExampleClass>(e => new ExampleClass { Name = "Initial
 var connectionString = builder.Configuration.GetConnectionString("DevFreelaCs");
 builder.Services.AddDbContext<DevFreelaDbContext>(options => options.UseSqlServer(connectionString));
 
+// Para utilizar o HttpClientFactory, construindo instancias do HttpClient utilizando em diferentes partes do sistema
+builder.Services.AddHttpClient();
 
 // É possivel criar as injeções de Dependencias em uma classe especifica de extensions
 builder.Services.AddScoped<IProjectService, ProjectService>();
@@ -44,6 +47,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<ISkillRepository, SkillRepository>();
 
 builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IPaymentService, PaymentService>();
 
 // Para configurar o Filter passamos o tipo dele na listagem de filters das controllers
 builder.Services.AddControllers(options => options.Filters.Add(typeof(ValidatorFilter)))

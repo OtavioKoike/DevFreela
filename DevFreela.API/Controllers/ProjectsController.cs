@@ -2,6 +2,7 @@ using DevFreela.Application.Commands.CreateComment;
 using DevFreela.Application.Commands.CreateProject;
 using DevFreela.Application.Commands.DeleteProject;
 using DevFreela.Application.Commands.UpdateProject;
+using DevFreela.Application.InputModels;
 using DevFreela.Application.Queries.GetAllProjects;
 using DevFreela.Application.Services.Interfaces;
 using MediatR;
@@ -152,11 +153,16 @@ namespace DevFreela.API.Controllers
         //api/projects/{id}/start
         [HttpPut("{id}/finish")]
         [Authorize(Roles = "client")]
-        public async Task<IActionResult> PutFinish(int id)
+        public async Task<IActionResult> PutFinish(int id, [FromBody] FinishProjectInputModel inputModel)
         {
-            await _projectService.Finish(id);
+            inputModel.Id = id;
 
-            return NoContent();
+            var response = await _projectService.Finish(inputModel);
+
+            if(!response)
+                return BadRequest("O pagamento não pôde ser processado.");
+
+            return Accepted();
         }
     }
 }

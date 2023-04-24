@@ -12,6 +12,6 @@ namespace DevFreela.Application.Services.Interfaces
         Task Delete(int id);
         Task CreateComment(CreateCommentInputModel inputModel);
         Task Start(int id);
-        Task Finish(int id); 
+        Task<bool> Finish(FinishProjectInputModel inputModel); 
     }
 }
