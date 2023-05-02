@@ -44,17 +44,25 @@ namespace DevFreela.Application.Services.Implementations
         public async Task<bool> Finish(FinishProjectInputModel inputModel)
         {
             var project = await _projectRepository.GetByIdAsync(inputModel.Id);
-            project?.Finish();
+
+            // Chamada ao Microsserviço de Pagamentos SEM Mensageria
+            //project?.Finish();
 
             var paymentInfoDto = new PaymentInfoDTO(inputModel.Id, inputModel.CreditCardNumber, inputModel.Cvv, inputModel.ExpiresAt, inputModel.FullName, project.TotalCost);
-            var result = await _paymentService.ProcessPayment(paymentInfoDto);
 
-            if (!result)
-                project.SetPaymentPending();
+            // Chamada ao Microsserviço de Pagamentos SEM Mensageria
+            //var result = await _paymentService.ProcessPayment(paymentInfoDto);
+            //if (!result)
+                //project.SetPaymentPending();
+
+            // Chamada ao Microsserviço de Pagamentos COM Mensageria
+            _paymentService.ProcessPayment(paymentInfoDto);
+            project.SetPaymentPending();
 
             await _projectRepository.SaveChangesAsync();
 
-            return result;
+            //return result;
+            return true;
         }
 
         public async Task<List<ProjectViewModel>> GetAll()

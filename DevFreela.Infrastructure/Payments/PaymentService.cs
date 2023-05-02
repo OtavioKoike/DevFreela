@@ -11,24 +11,37 @@ namespace DevFreela.Infrastructure.Payments
     {
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly string _paymentsBaseUrl;
-        public PaymentService(IHttpClientFactory httpClientFactory, IConfiguration configuration)
+
+        private readonly IMessageBusService _messageBusService;
+        private const string QUEUE_NAME = "Payments";
+        public PaymentService(IMessageBusService messageBusService, IHttpClientFactory httpClientFactory, IConfiguration configuration)
         {
             _httpClientFactory = httpClientFactory;
             _paymentsBaseUrl = configuration.GetSection("Services:Payments").Value;
+
+            _messageBusService = messageBusService;
         }
 
-        public async Task<bool> ProcessPayment(PaymentInfoDTO paymentInfoDTO)
+        // Mudado de Task<bool> para void pois com Mensageria não é possivel mais saber se deu certo no momento
+        public void ProcessPayment(PaymentInfoDTO paymentInfoDTO)
         {
-            // Chamada ao Microsserviço de Pagamentos
-            var url = $"{_paymentsBaseUrl}/api/payments";
-
             var paymentInfoJson = JsonSerializer.Serialize(paymentInfoDTO);
-            var paymentInfoContent = new StringContent(paymentInfoJson, Encoding.UTF8, "application/json");
 
-            var httpClient = _httpClientFactory.CreateClient("Payments");
-            var response = await httpClient.PostAsync(url, paymentInfoContent);
+            // Chamada ao Microsserviço de Pagamentos SEM Mensageria
+            //var url = $"{_paymentsBaseUrl}/api/payments";
 
-            return response.IsSuccessStatusCode;
+            //var paymentInfoContent = new StringContent(paymentInfoJson, Encoding.UTF8, "application/json");
+
+            //var httpClient = _httpClientFactory.CreateClient("Payments");
+            //var response = await httpClient.PostAsync(url, paymentInfoContent);
+
+            //return response.IsSuccessStatusCode;
+            // ------------------------------------------------------------------
+
+            // Chamada ao Microsserviço de Pagamentos COM Mensageria
+            var paymentInfoBytes = Encoding.UTF8.GetBytes(paymentInfoJson);
+
+            _messageBusService.Publish(QUEUE_NAME, paymentInfoBytes);
         }
     }
 }

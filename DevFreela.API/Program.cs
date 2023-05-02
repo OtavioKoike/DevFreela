@@ -1,3 +1,4 @@
+using DevFreela.API.Extensions;
 using DevFreela.API.Filters;
 using DevFreela.API.Models;
 using DevFreela.Application.Commands.CreateProject;
@@ -7,6 +8,8 @@ using DevFreela.Application.Validators;
 using DevFreela.Core.Repositories;
 using DevFreela.Core.Services.Interfaces;
 using DevFreela.Infrastructure.Auth;
+using DevFreela.Infrastructure.Consumers;
+using DevFreela.Infrastructure.MessageBus;
 using DevFreela.Infrastructure.Payments;
 using DevFreela.Infrastructure.Persistence;
 using DevFreela.Infrastructure.Persistence.Repositories;
@@ -37,17 +40,12 @@ builder.Services.AddDbContext<DevFreelaDbContext>(options => options.UseSqlServe
 // Para utilizar o HttpClientFactory, construindo instancias do HttpClient utilizando em diferentes partes do sistema
 builder.Services.AddHttpClient();
 
+// Hosted Service -> Rodar debaixo dos panos
+builder.Services.AddHostedService<PaymentApprovedConsumer>();
+
 // É possivel criar as injeções de Dependencias em uma classe especifica de extensions
-builder.Services.AddScoped<IProjectService, ProjectService>();
-builder.Services.AddScoped<IUserService, UserService>();
-builder.Services.AddScoped<ISkillService, SkillService>();
-
-builder.Services.AddScoped<IProjectRepository, ProjectRepositoy>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
-builder.Services.AddScoped<ISkillRepository, SkillRepository>();
-
-builder.Services.AddScoped<IAuthService, AuthService>();
-builder.Services.AddScoped<IPaymentService, PaymentService>();
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure();
 
 // Para configurar o Filter passamos o tipo dele na listagem de filters das controllers
 builder.Services.AddControllers(options => options.Filters.Add(typeof(ValidatorFilter)))
